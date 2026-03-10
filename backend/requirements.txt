@@ -1,0 +1,48 @@
+# ── Web Framework ──────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9
+
+# ── Database ────────────────────────────────────────────
+sqlalchemy==2.0.30
+alembic==1.13.1
+psycopg2-binary==2.9.9
+
+# ── Cache ───────────────────────────────────────────────
+redis==5.0.4
+
+# ── Task Scheduling ─────────────────────────────────────
+apscheduler==3.10.4
+
+# ── Environment ─────────────────────────────────────────
+python-dotenv==1.0.1
+
+# ── Data Collection ─────────────────────────────────────
+praw==7.7.1                  # Reddit
+ntscraper==0.3.8             # Twitter/X (no API key)
+yfinance==0.2.40             # Market data
+requests==2.32.2             # HTTP / GDELT
+
+# ── NLP / ML ────────────────────────────────────────────
+transformers==4.41.2
+torch==2.3.0
+huggingface-hub==0.23.2
+spacy==3.7.4
+langdetect==1.0.9
+
+# ── Data Processing ─────────────────────────────────────
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.0
+
+# ── Statistical ─────────────────────────────────────────
+statsmodels==0.14.2
+
+# ── LLM ─────────────────────────────────────────────────
+anthropic==0.28.0
+
+# ── Utilities ───────────────────────────────────────────
+pydantic==2.7.1
+pydantic-settings==2.3.0
+httpx==0.27.0
+

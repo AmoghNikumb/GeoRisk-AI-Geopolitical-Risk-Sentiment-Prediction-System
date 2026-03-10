@@ -1,0 +1,23 @@
+[
+  {"code": "US", "name": "United States", "full_name": "United States of America", "region": "North America", "flag_emoji": "🇺🇸", "stock_index_ticker": "^GSPC", "currency_code": "USD"},
+  {"code": "CN", "name": "China", "full_name": "People's Republic of China", "region": "East Asia", "flag_emoji": "🇨🇳", "stock_index_ticker": "000001.SS", "currency_code": "CNY"},
+  {"code": "RU", "name": "Russia", "full_name": "Russian Federation", "region": "Eastern Europe", "flag_emoji": "🇷🇺", "stock_index_ticker": "IMOEX.ME", "currency_code": "RUB"},
+  {"code": "IN", "name": "India", "full_name": "Republic of India", "region": "South Asia", "flag_emoji": "🇮🇳", "stock_index_ticker": "^NSEI", "currency_code": "INR"},
+  {"code": "PK", "name": "Pakistan", "full_name": "Islamic Republic of Pakistan", "region": "South Asia", "flag_emoji": "🇵🇰", "stock_index_ticker": "^KSE100", "currency_code": "PKR"},
+  {"code": "GB", "name": "United Kingdom", "full_name": "United Kingdom of Great Britain", "region": "Western Europe", "flag_emoji": "🇬🇧", "stock_index_ticker": "^FTSE", "currency_code": "GBP"},
+  {"code": "DE", "name": "Germany", "full_name": "Federal Republic of Germany", "region": "Western Europe", "flag_emoji": "🇩🇪", "stock_index_ticker": "^GDAXI", "currency_code": "EUR"},
+  {"code": "FR", "name": "France", "full_name": "French Republic", "region": "Western Europe", "flag_emoji": "🇫🇷", "stock_index_ticker": "^FCHI", "currency_code": "EUR"},
+  {"code": "JP", "name": "Japan", "full_name": "Japan", "region": "East Asia", "flag_emoji": "🇯🇵", "stock_index_ticker": "^N225", "currency_code": "JPY"},
+  {"code": "KR", "name": "South Korea", "full_name": "Republic of Korea", "region": "East Asia", "flag_emoji": "🇰🇷", "stock_index_ticker": "^KS11", "currency_code": "KRW"},
+  {"code": "KP", "name": "North Korea", "full_name": "Democratic People's Republic of Korea", "region": "East Asia", "flag_emoji": "🇰🇵", "stock_index_ticker": null, "currency_code": "KPW"},
+  {"code": "IR", "name": "Iran", "full_name": "Islamic Republic of Iran", "region": "Middle East", "flag_emoji": "🇮🇷", "stock_index_ticker": null, "currency_code": "IRR"},
+  {"code": "IL", "name": "Israel", "full_name": "State of Israel", "region": "Middle East", "flag_emoji": "🇮🇱", "stock_index_ticker": "^TA125.TA", "currency_code": "ILS"},
+  {"code": "SA", "name": "Saudi Arabia", "full_name": "Kingdom of Saudi Arabia", "region": "Middle East", "flag_emoji": "🇸🇦", "stock_index_ticker": "^TASI.SR", "currency_code": "SAR"},
+  {"code": "TR", "name": "Turkey", "full_name": "Republic of Turkey", "region": "Middle East", "flag_emoji": "🇹🇷", "stock_index_ticker": "XU100.IS", "currency_code": "TRY"},
+  {"code": "UA", "name": "Ukraine", "full_name": "Ukraine", "region": "Eastern Europe", "flag_emoji": "🇺🇦", "stock_index_ticker": null, "currency_code": "UAH"},
+  {"code": "BR", "name": "Brazil", "full_name": "Federative Republic of Brazil", "region": "South America", "flag_emoji": "🇧🇷", "stock_index_ticker": "^BVSP", "currency_code": "BRL"},
+  {"code": "AU", "name": "Australia", "full_name": "Commonwealth of Australia", "region": "Oceania", "flag_emoji": "🇦🇺", "stock_index_ticker": "^AXJO", "currency_code": "AUD"},
+  {"code": "CA", "name": "Canada", "full_name": "Canada", "region": "North America", "flag_emoji": "🇨🇦", "stock_index_ticker": "^GSPTSE", "currency_code": "CAD"},
+  {"code": "MX", "name": "Mexico", "full_name": "United Mexican States", "region": "North America", "flag_emoji": "🇲🇽", "stock_index_ticker": "^MXX", "currency_code": "MXN"}
+]
+

@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+venv/
+.env
+*.egg-info/
+.pytest_cache/
+nlp/models/
+ml/mlflow/
+*.pt
+*.bin
+*.ckpt
+node_modules/
+.next/
+frontend/.env.local
+.DS_Store
+*.log
