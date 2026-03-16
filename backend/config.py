@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     # ── HuggingFace ───────────────────────────────────────
     huggingface_api_key: str = ""
 
-    # ── Anthropic ─────────────────────────────────────────
-    anthropic_api_key: str = ""
+    # Add this:
+    GEMINI_API_KEY: str = ""
 
     # ── App ───────────────────────────────────────────────
     app_env: str = "development"

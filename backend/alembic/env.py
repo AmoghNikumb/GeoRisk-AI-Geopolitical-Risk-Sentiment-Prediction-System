@@ -24,6 +24,7 @@ load_dotenv()
 
 # Override sqlalchemy.url from environment
 db_url = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/georisk_db")
+db_url = db_url.replace("%", "%%")
 config.set_main_option("sqlalchemy.url", db_url)
 
 if config.config_file_name is not None:
