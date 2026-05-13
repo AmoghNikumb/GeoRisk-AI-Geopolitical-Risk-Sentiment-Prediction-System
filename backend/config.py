@@ -4,13 +4,14 @@ All environment variables are loaded from .env automatically.
 """
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from typing import List
 
 
 class Settings(BaseSettings):
     # ── Database ──────────────────────────────────────────
-    database_url: str = "postgresql://postgres:password@localhost:5432/georisk_db"
+    database_url: str = "sqlite:///./georisk.db"
 
-    # ── Redis ─────────────────────────────────────────────
+    # ── Redis (optional) ──────────────────────────────────
     redis_url: str = "redis://localhost:6379/0"
 
     # ── Reddit ────────────────────────────────────────────
@@ -21,7 +22,7 @@ class Settings(BaseSettings):
     # ── HuggingFace ───────────────────────────────────────
     huggingface_api_key: str = ""
 
-    # Add this:
+    # ── LLM ───────────────────────────────────────────────
     GEMINI_API_KEY: str = ""
 
     # ── App ───────────────────────────────────────────────
@@ -29,6 +30,21 @@ class Settings(BaseSettings):
     app_host: str = "0.0.0.0"
     app_port: int = 8000
     log_level: str = "INFO"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+
+    # ── Feature Flags ─────────────────────────────────────
+    enable_scheduler: bool = True
+    enable_reddit: bool = False      # stub until credentials provided
+    enable_twitter: bool = False     # stub until credentials provided
+    enable_gdelt: bool = True
+    enable_markets: bool = True
+    seed_demo_data: bool = True      # Seed realistic demo data on startup
+
+    # ── Model Backend ─────────────────────────────────────
+    # "dummy"  → rule-based placeholder (default, works immediately)
+    # "pickle" → load .pkl file from model_path
+    model_backend: str = "dummy"
+    model_path: str = "models/risk_model.pkl"
 
     # ── Scheduler Intervals (seconds) ─────────────────────
     reddit_interval: int = 1800
@@ -53,11 +69,15 @@ class Settings(BaseSettings):
     weight_market_stress: float = 0.10
 
     # ── Alert Thresholds ──────────────────────────────────
-    alert_score_jump: float = 15.0       # points in 6hrs
-    alert_vix_spike: float = 20.0        # VIX absolute level
+    alert_score_jump: float = 15.0
+    alert_vix_spike: float = 20.0
 
     # ── LLM Brief Cache ───────────────────────────────────
     brief_cache_hours: int = 6
+
+    @property
+    def cors_origins_list(self) -> List[str]:
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
     class Config:
         env_file = ".env"
@@ -67,10 +87,7 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    """Cached settings instance — call this everywhere."""
     return Settings()
 
 
-# Convenience alias
 settings = get_settings()
-

@@ -14,3 +14,11 @@ node_modules/
 frontend/.env.local
 .DS_Store
 *.log
+
+# SQLite local database
+*.db
+*.sqlite
+*.sqlite3
+
+# Kiro IDE files
+.kiro/

@@ -17,15 +17,19 @@ logger = logging.getLogger(__name__)
 
 # ── Ticker Configuration ──────────────────────────────────────────────────────
 GLOBAL_TICKERS = {
-    "vix":    "^VIX",
-    "sp500":  "^GSPC",
+    "vix":       "^VIX",
+    "sp500":     "^GSPC",
+    "nasdaq":    "^IXIC",
+    "dow":       "^DJI",
     "crude_oil": "CL=F",
-    "gold":   "GC=F",
-    "dxy":    "DX-Y.NYB",
+    "gold":      "GC=F",
+    "dxy":       "DX-Y.NYB",
+    "btc":       "BTC-USD",
 }
 
 COUNTRY_TICKERS = {
     "india_nifty":   "^NSEI",
+    "india_sensex":  "^BSESN",
     "china_sse":     "000001.SS",
     "russia_moex":   "IMOEX.ME",
     "germany_dax":   "^GDAXI",

@@ -80,6 +80,16 @@ def job_alerts():
         logger.error(f"Alert checker job failed: {e}")
 
 
+def job_news():
+    """Pre-warm the news aggregator cache every 20 minutes."""
+    try:
+        from services.news_aggregator import fetch_news
+        result = fetch_news(force=True)
+        logger.info(f"News cache refreshed: {result['total']} items")
+    except Exception as e:
+        logger.error(f"News aggregator job failed: {e}")
+
+
 def job_briefs():
     """Scheduled brief generation for top 10 country pairs."""
     try:
@@ -110,15 +120,17 @@ def start_scheduler():
         job_defaults={"coalesce": True, "max_instances": 1, "misfire_grace_time": 300}
     )
 
-    # Data collection — every 30 mins
-    _scheduler.add_job(job_reddit,  IntervalTrigger(seconds=settings.reddit_interval),  id="reddit",  replace_existing=True)
-    _scheduler.add_job(job_twitter, IntervalTrigger(seconds=settings.twitter_interval), id="twitter", replace_existing=True)
+    # Data collection — only if enabled
+    if settings.enable_reddit:
+        _scheduler.add_job(job_reddit, IntervalTrigger(seconds=settings.reddit_interval), id="reddit", replace_existing=True)
+    if settings.enable_twitter:
+        _scheduler.add_job(job_twitter, IntervalTrigger(seconds=settings.twitter_interval), id="twitter", replace_existing=True)
+    if settings.enable_markets:
+        _scheduler.add_job(job_market, IntervalTrigger(seconds=settings.market_interval), id="market", replace_existing=True)
+    if settings.enable_gdelt:
+        _scheduler.add_job(job_gdelt, IntervalTrigger(seconds=settings.gdelt_interval), id="gdelt", replace_existing=True)
 
-    # Market + GDELT — every 15 mins
-    _scheduler.add_job(job_market, IntervalTrigger(seconds=settings.market_interval), id="market", replace_existing=True)
-    _scheduler.add_job(job_gdelt,  IntervalTrigger(seconds=settings.gdelt_interval),  id="gdelt",  replace_existing=True)
-
-    # Processing + scoring — every hour
+    # Processing + scoring — always on
     _scheduler.add_job(job_process_and_score, IntervalTrigger(seconds=settings.process_interval), id="scoring",   replace_existing=True)
     _scheduler.add_job(job_aggregate,          IntervalTrigger(seconds=settings.process_interval), id="aggregate", replace_existing=True)
     _scheduler.add_job(job_risk_scores,        IntervalTrigger(seconds=settings.process_interval), id="risk",      replace_existing=True)
@@ -128,6 +140,9 @@ def start_scheduler():
 
     # LLM briefs — every 6 hours
     _scheduler.add_job(job_briefs, IntervalTrigger(seconds=settings.brief_interval), id="briefs", replace_existing=True)
+
+    # News aggregator cache warm — every 20 minutes
+    _scheduler.add_job(job_news, IntervalTrigger(seconds=1200), id="news", replace_existing=True)
 
     _scheduler.start()
     logger.info(

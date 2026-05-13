@@ -13,13 +13,18 @@ from config import settings
 logger = logging.getLogger(__name__)
 
 # ── Engine ────────────────────────────────────────────────────────────────────
+_is_sqlite = settings.database_url.startswith("sqlite")
+
 engine = create_engine(
     settings.database_url,
-    poolclass=QueuePool,
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True,          # Auto-reconnect on stale connections
-    pool_recycle=3600,           # Recycle connections every hour
+    **({} if _is_sqlite else dict(
+        poolclass=QueuePool,
+        pool_size=10,
+        max_overflow=20,
+        pool_pre_ping=True,
+        pool_recycle=3600,
+    )),
+    connect_args={"check_same_thread": False} if _is_sqlite else {},
     echo=(settings.app_env == "development"),
 )
 
