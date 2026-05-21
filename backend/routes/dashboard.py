@@ -32,10 +32,9 @@ def get_dashboard(db: Session = Depends(get_db)):
     # Latest market snapshot
     market = db.query(MarketSnapshot).order_by(MarketSnapshot.captured_at.desc()).first()
 
-    # Unread alerts (last 24h)
+    # Unread alerts (last 7 days)
     alerts = db.query(Alert).filter(
-        Alert.is_read == False,  # noqa: E712
-        Alert.triggered_at >= datetime.utcnow() - timedelta(hours=24)
+        Alert.triggered_at >= datetime.utcnow() - timedelta(days=7)
     ).order_by(Alert.triggered_at.desc()).all()
 
     # Summary statistics

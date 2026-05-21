@@ -21,6 +21,7 @@ from models.alert import Alert
 from models.intel_brief import IntelBrief
 from models.sentiment_score import SentimentScore
 from models.gdelt_event import GdeltEvent
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -192,47 +193,75 @@ def seed_market_snapshots(db) -> None:
 
 
 def seed_sentiment_scores(db) -> None:
-    """Seed 72h of hourly sentiment scores for each tracked country."""
+    """
+    Seed 72h of hourly sentiment scores for each tracked country.
+    Values are calibrated so the LR model produces realistic, varied
+    risk scores — not all-100 or all-0.
+    """
     if db.query(SentimentScore).count() > 0:
         return
     countries = list({c for pair in DEMO_PAIRS for c in (pair[0], pair[1])})
     now = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
 
-    # Base sentiment per country (negative = hostile)
+    # Sentiment calibrated to produce realistic LR outputs.
+    # LR saturates at 100 when avg_sentiment < -0.5 (neg_ratio ≈ 0.75+).
+    # Keep values in a range that produces varied model outputs.
+    # Scale: -1.0 = very hostile, 0.0 = neutral, +1.0 = cooperative
     base_sentiment = {
-        "CN": -0.35, "US": -0.28, "RU": -0.62, "UA": -0.58,
-        "IN": -0.31, "PK": -0.44, "IL": -0.52, "IR": -0.61,
-        "KP": -0.70, "KR": -0.25, "SA": -0.18, "GB": -0.15,
-        "TW": -0.40, "TR": -0.22, "GR": -0.18,
+        # Active conflict zones — moderately negative (not extreme)
+        "RU": -0.38, "UA": -0.35,
+        "IN": -0.22, "PK": -0.28,
+        "IL": -0.32, "IR": -0.36,
+        "KP": -0.40, "CN": -0.20,
+        # Elevated tension — mildly negative
+        "TW": -0.18, "KR": -0.12,
+        # Lower tension — near neutral
+        "US": -0.10, "GB": -0.08,
+        "SA": -0.06, "TR": -0.05,
+        "GR": -0.04,
     }
 
     for country in countries:
-        base = base_sentiment.get(country, -0.20)
+        base = base_sentiment.get(country, -0.10)
         for h in range(72, 0, -1):
             bucket = now - timedelta(hours=h)
-            drift = random.uniform(-0.05, 0.05)
-            avg = round(max(-1.0, min(1.0, base + drift)), 4)
+            drift = random.uniform(-0.04, 0.04)
+            avg = round(max(-0.6, min(0.4, base + drift)), 4)
+            neg_ratio = round(max(0.0, min(1.0, 0.5 - avg * 0.4)), 4)
             db.add(SentimentScore(
                 country_code=country,
                 time_bucket=bucket,
                 avg_sentiment=avg,
                 weighted_sentiment=round(avg * 0.95, 4),
-                sentiment_delta=round(random.uniform(-0.08, 0.08), 4),
-                politician_sentiment=round(avg - 0.1, 4),
-                public_sentiment=round(avg + 0.05, 4),
+                sentiment_delta=round(random.uniform(-0.04, 0.04), 4),
+                politician_sentiment=round(avg - 0.05, 4),
+                public_sentiment=round(avg + 0.03, 4),
                 post_count=random.randint(15, 120),
-                negative_ratio=round(max(0, min(1, 0.5 - avg * 0.4)), 4),
-                high_hostility_count=random.randint(0, 8),
-                post_volume_spike=round(random.uniform(-0.5, 1.5), 3),
+                negative_ratio=neg_ratio,
+                high_hostility_count=random.randint(0, 4),
+                post_volume_spike=round(random.uniform(-0.3, 0.8), 3),
                 computed_at=bucket,
             ))
     logger.info(f"Sentiment scores seeded ({len(countries)} countries × 72h)")
 
 
 def seed_risk_scores(db) -> None:
-    """Seed risk scores — 3 historical + 1 current per pair."""
+    """
+    Seed risk scores with realistic, varied values across all risk tiers.
+
+    Always seeds — regardless of MODEL_BACKEND — so the dashboard shows
+    meaningful data immediately. The scheduler will overwrite these with
+    real model-computed scores on its first run once live data flows in.
+
+    Score distribution:
+      CRITICAL (≥80): RU-UA, IN-PK, IL-IR
+      HIGH     (≥60): CN-TW, CN-US, KP-US, IN-CN
+      MODERATE (≥30): KP-KR, RU-GB, TR-GR, IL-SA
+      LOW      (<30): IN-US
+    """
     if db.query(RiskScore).count() > 0:
         return
+
     now = datetime.utcnow()
     for a, b, score, classification, delta in DEMO_PAIRS:
         pair_key = RiskScore.make_pair_key(a, b)
@@ -309,12 +338,14 @@ def _build_factors(a: str, b: str, score: float, level: str):
 
 
 def seed_alerts(db) -> None:
-    """Seed realistic alerts."""
+    """Seed realistic alerts with recent timestamps."""
     if db.query(Alert).count() > 0:
         return
     now = datetime.utcnow()
     for i, (a, b, severity, atype, title, message) in enumerate(DEMO_ALERTS):
         pair_key = RiskScore.make_pair_key(a, b)
+        # Stagger timestamps: 1h, 3h, 6h, 10h, 18h, 26h ago
+        hours_ago = [1, 3, 6, 10, 18, 26][i] if i < 6 else i * 4
         db.add(Alert(
             country_a=a, country_b=b, pair_key=pair_key,
             alert_type=atype, title=title, message=message,
@@ -322,7 +353,7 @@ def seed_alerts(db) -> None:
             prev_score=50.0, new_score=75.0, score_delta=25.0,
             new_classification=severity if severity == "CRITICAL" else "HIGH",
             is_read=(i > 2),  # First 3 unread
-            triggered_at=now - timedelta(hours=i * 3 + 1),
+            triggered_at=now - timedelta(hours=hours_ago),
         ))
     logger.info(f"Alerts seeded ({len(DEMO_ALERTS)} alerts)")
 

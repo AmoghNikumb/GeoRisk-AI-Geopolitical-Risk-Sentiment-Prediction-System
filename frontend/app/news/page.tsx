@@ -229,8 +229,18 @@ function PageHeader({
         borderBottom: '1px solid var(--border-navy)',
         padding: '40px 24px 36px',
         marginBottom: 28,
+        position: 'relative',
+        overflow: 'hidden',
       }}>
-        <div style={{ maxWidth: 1440, margin: '0 auto' }}>
+        {/* Background image */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `url('/news-bg.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 40%',
+          opacity: 0.10,
+        }} />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 1440, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
             <div>
               <div className="section-label" style={{ color: '#9aacbe', marginBottom: 10 }}>
@@ -273,3 +283,4 @@ function PageHeader({
     </>
   )
 }
+

@@ -139,14 +139,6 @@ export interface BilateralData {
   intelligence_brief?: IntelBrief
   gdelt_events?: GdeltEvent[]
 }
-  sentiment_timeline: {
-    country_a: SentimentPoint[]
-    country_b: SentimentPoint[]
-  }
-  top_posts: Post[]
-  intel_brief: IntelBrief
-  gdelt_events: GdeltEvent[]
-}
 
 export interface Politician {
   id: number

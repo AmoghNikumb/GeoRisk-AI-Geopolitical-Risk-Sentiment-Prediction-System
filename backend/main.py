@@ -42,7 +42,66 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.error(f"Demo seed failed: {e}")
 
-    # 4. Start background scheduler
+    # 4. Pre-warm the NLP inference service and run demo validation
+    #    This loads RoBERTa + LR at startup so the first API call is fast.
+    try:
+        import threading
+        def _warmup_nlp():
+            import time
+            time.sleep(2)
+            try:
+                from services.nlp_inference import get_nlp_service
+                svc = get_nlp_service()
+                if svc.is_ready():
+                    # Run demo validation sentences to confirm pipeline works
+                    from scoring.demo_dataset import score_validation_sentences
+                    results = score_validation_sentences()
+                    correct = sum(1 for r in results if r["correct"])
+                    logger.info(
+                        f"NLP pipeline warm-up complete. "
+                        f"Demo validation: {correct}/{len(results)} correct. "
+                        f"Scores: {[r['risk_score'] for r in results]}"
+                    )
+                else:
+                    logger.warning("NLP service not ready after warm-up")
+            except Exception as e:
+                logger.error(f"NLP warm-up failed: {e}")
+        threading.Thread(target=_warmup_nlp, daemon=True).start()
+    except Exception as e:
+        logger.error(f"NLP warm-up thread failed: {e}")
+
+    # 5. If pkl model is active, schedule a delayed initial risk score computation.
+    #    We delay 60s to let the seed data settle, and only run if real data
+    #    (sentiment scores / GDELT events) is available — otherwise the LR model
+    #    saturates at 100 due to no input signal.
+    if settings.model_backend == "pickle":
+        try:
+            import threading
+            def _initial_risk_run():
+                import time
+                time.sleep(60)  # wait for scheduler to collect some data first
+                from database import get_db_session
+                from models.sentiment_score import SentimentScore as SS
+                from models.gdelt_event import GdeltEvent as GE
+                with get_db_session() as db:
+                    has_sentiment = db.query(SS).count() > 0
+                    has_gdelt = db.query(GE).count() > 0
+                # Only run if we have real signal data — not just seed data
+                if has_sentiment and has_gdelt:
+                    from scoring.risk_calculator import RiskScoreEngine
+                    logger.info("Running initial pkl model risk score computation (real data available)...")
+                    n = RiskScoreEngine().run()
+                    logger.info(f"Initial risk computation complete: {n} pairs scored by pkl model.")
+                else:
+                    logger.info(
+                        "Skipping initial pkl model run — no real sentiment/GDELT data yet. "
+                        "Seeded scores will display until the scheduler collects live data."
+                    )
+            threading.Thread(target=_initial_risk_run, daemon=True).start()
+        except Exception as e:
+            logger.error(f"Initial risk run failed: {e}")
+
+    # 5. Start background scheduler
     if settings.enable_scheduler:
         try:
             from scheduler import start_scheduler

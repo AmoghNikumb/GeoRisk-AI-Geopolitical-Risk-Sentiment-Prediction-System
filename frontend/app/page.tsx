@@ -8,6 +8,7 @@ import RiskHeatmap from '@/components/dashboard/RiskHeatmap'
 import MarketIndicators from '@/components/dashboard/MarketIndicators'
 import AlertsWidget from '@/components/dashboard/AlertsWidget'
 import RiskTrendChart from '@/components/dashboard/RiskTrendChart'
+import ModelDemoPanel from '@/components/dashboard/ModelDemoPanel'
 import MarketTicker from '@/components/layout/MarketTicker'
 import { useRouter } from 'next/navigation'
 import { RefreshCw } from 'lucide-react'
@@ -235,6 +236,21 @@ export default function HomePage() {
             />
           </div>
         )}
+
+        {/* Section: Model Demo Panel */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ marginBottom: 16 }}>
+            <div className="section-label" style={{ marginBottom: 4 }}>NLP Model Inference</div>
+            <h2 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 18, color: 'var(--text-primary)' }}>
+              Model Demo & Collected Posts
+            </h2>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+              Live inference from the trained RoBERTa + LogisticRegression pipeline.
+              Demo data only — live Twitter/X fetching will replace this module.
+            </p>
+          </div>
+          <ModelDemoPanel />
+        </div>
 
         {/* Footer note */}
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

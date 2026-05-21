@@ -31,5 +31,16 @@ export const api = {
     const query = qs.toString() ? `?${qs.toString()}` : ''
     return fetchAPI<any>(`/api/geopolitical-news${query}`)
   },
+  // ── Model inference endpoints ──────────────────────────────────────────────
+  modelStatus: () => fetchAPI<any>('/api/model/status'),
+  modelDemo: () => fetchAPI<any>('/api/model/demo'),
+  modelDemoTweets: () => fetchAPI<any>('/api/model/demo-tweets'),
+  modelDemoTweetsPair: (pair: string) => fetchAPI<any>(`/api/model/demo-tweets/${pair}`),
+  modelInfer: (texts: string[], country?: string) =>
+    fetch(`${API_BASE}/api/model/infer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts, country: country ?? 'GLOBAL' }),
+    }).then(r => r.json()),
 }
 

@@ -41,10 +41,19 @@ class Settings(BaseSettings):
     seed_demo_data: bool = True      # Seed realistic demo data on startup
 
     # ── Model Backend ─────────────────────────────────────
-    # "dummy"  → rule-based placeholder (default, works immediately)
-    # "pickle" → load .pkl file from model_path
-    model_backend: str = "dummy"
-    model_path: str = "models/risk_model.pkl"
+    # "pickle" → load georisk_lr.pkl + georisk_lr_scaler.pkl (default)
+    #            LogisticRegression trained on GDELT 1979-2013 (59 features)
+    #            Output: P(High Risk) * 100 → 0-100 risk score
+    #            Accuracy: 92.8%  F1-macro: 0.907
+    # "dummy"  → rule-based placeholder (debug/fallback only)
+    model_backend: str = "pickle"
+    model_path: str = "models/georisk_lr.pkl"
+    scaler_path: str = "models/georisk_lr_scaler.pkl"
+
+    # ── NLP Inference Pipeline ────────────────────────────
+    # RoBERTa model for text → sentiment scoring
+    # Pipeline: text → RoBERTa → per-post risk → LR aggregate
+    nlp_roberta_model: str = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 
     # ── Scheduler Intervals (seconds) ─────────────────────
     reddit_interval: int = 1800
