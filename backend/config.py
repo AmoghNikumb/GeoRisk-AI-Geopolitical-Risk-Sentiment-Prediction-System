@@ -14,6 +14,14 @@ class Settings(BaseSettings):
     # ── Redis (optional) ──────────────────────────────────
     redis_url: str = "redis://localhost:6379/0"
 
+    # ── Apify ─────────────────────────────────────────────
+    apify_api_key: str = ""
+    # Actor to use for live Twitter scraping.
+    # Default: apidojo/tweet-scraper (well-maintained, rich field set)
+    apify_twitter_actor: str = "apidojo/tweet-scraper"
+    # Max tweets to fetch per scheduled run (controls Apify compute cost)
+    apify_max_tweets: int = 100
+
     # ── Reddit ────────────────────────────────────────────
     reddit_client_id: str = ""
     reddit_client_secret: str = ""
@@ -24,6 +32,7 @@ class Settings(BaseSettings):
 
     # ── LLM ───────────────────────────────────────────────
     GEMINI_API_KEY: str = ""
+    GROQ_API_KEY: str = ""
 
     # ── App ───────────────────────────────────────────────
     app_env: str = "development"

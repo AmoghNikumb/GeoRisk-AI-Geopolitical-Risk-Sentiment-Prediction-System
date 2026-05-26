@@ -6,9 +6,8 @@ import { DashboardData } from '@/lib/types'
 import SummaryStats from '@/components/dashboard/SummaryStats'
 import RiskHeatmap from '@/components/dashboard/RiskHeatmap'
 import MarketIndicators from '@/components/dashboard/MarketIndicators'
-import AlertsWidget from '@/components/dashboard/AlertsWidget'
 import RiskTrendChart from '@/components/dashboard/RiskTrendChart'
-import ModelDemoPanel from '@/components/dashboard/ModelDemoPanel'
+import ModelDemoPanel from '@/components/dashboard/PoliticalStatementsPanel'
 import MarketTicker from '@/components/layout/MarketTicker'
 import { useRouter } from 'next/navigation'
 import { RefreshCw } from 'lucide-react'
@@ -41,12 +40,6 @@ export default function HomePage() {
 
   const handleRefresh = async () => { setRefreshing(true); await fetchDashboard() }
   const handleSelectPair = (a: string, b: string) => router.push(`/bilateral?a=${a}&b=${b}`)
-  const handleMarkAlertRead = async (id: number) => {
-    try { await api.markAlertRead(id); await fetchDashboard() } catch {}
-  }
-  const handleMarkAllAlertsRead = async () => {
-    try { await api.markAllAlertsRead(); await fetchDashboard() } catch {}
-  }
 
   if (loading) {
     return (
@@ -188,33 +181,18 @@ export default function HomePage() {
           {data && <RiskHeatmap risks={data.risk_scores} onSelectPair={handleSelectPair} />}
         </div>
 
-        {/* Section: Alerts + Market */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 32 }}>
-          <div>
-            <div style={{ marginBottom: 16 }}>
-              <div className="section-label" style={{ marginBottom: 4 }}>Situation Room</div>
-              <h2 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 18, color: 'var(--text-primary)' }}>
-                Active Alerts
-              </h2>
-            </div>
-            {data && (
-              <AlertsWidget
-                alerts={data.alerts}
-                unreadCount={data.summary.unread_alerts}
-                onMarkRead={handleMarkAlertRead}
-                onMarkAllRead={handleMarkAllAlertsRead}
-              />
-            )}
+        {/* Section: Market Indicators (Full Width) */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ marginBottom: 16 }}>
+            <div className="section-label" style={{ marginBottom: 4 }}>Financial Signals</div>
+            <h2 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 18, color: 'var(--text-primary)' }}>
+              Market Indicators
+            </h2>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+              Real-time market data and stress indicators tracking global financial conditions.
+            </p>
           </div>
-          <div>
-            <div style={{ marginBottom: 16 }}>
-              <div className="section-label" style={{ marginBottom: 4 }}>Financial Signals</div>
-              <h2 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 18, color: 'var(--text-primary)' }}>
-                Market Indicators
-              </h2>
-            </div>
-            {data && <MarketIndicators market={data.market} />}
-          </div>
+          {data && <MarketIndicators market={data.market} />}
         </div>
 
         {/* Section: Trend Chart */}
@@ -237,16 +215,15 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Section: Model Demo Panel */}
+        {/* Section: Political Statements Panel */}
         <div style={{ marginBottom: 32 }}>
           <div style={{ marginBottom: 16 }}>
             <div className="section-label" style={{ marginBottom: 4 }}>NLP Model Inference</div>
             <h2 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 18, color: 'var(--text-primary)' }}>
-              Model Demo & Collected Posts
+              Top Political Statements
             </h2>
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-              Live inference from the trained RoBERTa + LogisticRegression pipeline.
-              Demo data only — live Twitter/X fetching will replace this module.
+              Recent tweets from world leaders — scored by our RoBERTa + LogisticRegression pipeline with affected country detection and intelligence summaries.
             </p>
           </div>
           <ModelDemoPanel />

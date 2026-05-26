@@ -62,11 +62,15 @@ export const COUNTRY_NAMES: Record<string, string> = {
   JP: 'Japan', KR: 'South Korea', KP: 'North Korea', IR: 'Iran',
   IL: 'Israel', SA: 'Saudi Arabia', TR: 'Turkey', UA: 'Ukraine',
   BR: 'Brazil', AU: 'Australia', CA: 'Canada', MX: 'Mexico',
+  PS: 'Palestine', TW: 'Taiwan', GR: 'Greece',
 }
 
 export const TRACKED_PAIRS = [
-  ['CN', 'US'], ['IN', 'PK'], ['RU', 'UA'], ['IL', 'IR'],
-  ['IN', 'CN'], ['KP', 'US'], ['KP', 'KR'], ['IL', 'SA'],
-  ['RU', 'GB'], ['IN', 'US'],
+  // CRITICAL
+  ['IL', 'IR'], ['US', 'IR'], ['RU', 'UA'], ['IL', 'PS'],
+  // HIGH
+  ['US', 'CN'], ['RU', 'US'], ['KP', 'KR'], ['IN', 'PK'],
+  // MODERATE
+  ['GB', 'US'], ['CN', 'TW'], ['CN', 'IN'], ['CN', 'JP'],
 ]
 

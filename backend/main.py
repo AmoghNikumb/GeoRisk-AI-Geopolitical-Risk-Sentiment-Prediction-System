@@ -148,6 +148,7 @@ app.add_middleware(
 # ── Routers ───────────────────────────────────────────────────────────────────
 from routes import dashboard, bilateral, entities, briefs, alerts  # noqa: E402
 from routes import markets, jobs, model as model_router, news       # noqa: E402
+from routes import ingest as ingest_router                          # noqa: E402
 
 # Core data endpoints
 app.include_router(dashboard.router,      prefix="/api", tags=["Dashboard"])
@@ -161,6 +162,9 @@ app.include_router(news.router,           prefix="/api", tags=["News"])
 # Admin / ops endpoints
 app.include_router(jobs.router,           prefix="/api", tags=["Jobs"])
 app.include_router(model_router.router,   prefix="/api", tags=["Model"])
+
+# Ingestion endpoints
+app.include_router(ingest_router.router,  prefix="/api", tags=["Ingestion"])
 
 
 # ── Health ────────────────────────────────────────────────────────────────────
