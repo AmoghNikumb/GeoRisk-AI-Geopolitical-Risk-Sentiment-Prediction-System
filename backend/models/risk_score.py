@@ -56,11 +56,21 @@ class RiskScore(Base):
 
     @staticmethod
     def classify(score: float) -> str:
-        if score < 30:
+        """
+        Classify risk score into tiers based on geopolitical severity.
+        
+        Scoring model (as of May 22, 2026):
+          0-20  → LOW (stable relations, no significant tensions)
+          21-40 → MODERATE (some friction, manageable tensions)
+          41-60 → HIGH (confrontation risk, elevated tensions)
+          61-80 → CRITICAL (severe crisis potential)
+          81-100 → CRITICAL (active war / near-war)
+        """
+        if score <= 20:
             return "LOW"
-        elif score < 60:
+        elif score <= 40:
             return "MODERATE"
-        elif score < 80:
+        elif score <= 60:
             return "HIGH"
         else:
             return "CRITICAL"

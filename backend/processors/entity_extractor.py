@@ -49,6 +49,12 @@ def _load_spacy():
         nlp = spacy.load("en_core_web_sm")
         logger.info("spaCy en_core_web_sm loaded.")
         return nlp
+    except ModuleNotFoundError:
+        logger.warning(
+            "spaCy is not installed. Person extraction will be skipped. "
+            "Install with: pip install spacy && python -m spacy download en_core_web_sm"
+        )
+        return None
     except OSError:
         logger.warning(
             "spaCy model not found. Run: python -m spacy download en_core_web_sm\n"

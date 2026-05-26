@@ -25,20 +25,45 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
-# ── Tracked pairs with realistic baseline scores ──────────────────────────────
+# ── Tracked pairs with realistic baseline scores (as of May 22, 2026) ─────────
+# Based on actual geopolitical conditions from currentgeo.txt
+# Format: (country_a, country_b, score, classification, recent_delta)
 DEMO_PAIRS = [
-    ("CN", "US", 74.2, "HIGH",     6.1),
-    ("IN", "PK", 88.5, "CRITICAL", 3.4),
-    ("RU", "UA", 91.0, "CRITICAL", -2.1),
-    ("IL", "IR", 82.3, "CRITICAL", 8.7),
-    ("IN", "CN", 61.4, "HIGH",     4.2),
-    ("KP", "US", 67.8, "HIGH",     1.5),
-    ("KP", "KR", 58.9, "MODERATE", -3.2),
-    ("IL", "SA", 38.1, "MODERATE", 2.0),
-    ("RU", "GB", 55.6, "MODERATE", 5.8),
-    ("IN", "US", 22.4, "LOW",      -1.0),
-    ("CN", "TW", 79.1, "HIGH",     7.3),
-    ("TR", "GR", 44.7, "MODERATE", 0.5),
+    # CRITICAL — Active conflicts and near-war scenarios
+    ("IL", "IR", 96.0, "CRITICAL", 4.1),   # Israel-Iran: near-war, direct strikes exchanged
+    ("US", "IR", 96.0, "CRITICAL", 3.8),   # US-Iran: nuclear brinkmanship, maximum pressure
+    ("RU", "UA", 95.0, "CRITICAL", 2.1),   # Active war - most dangerous active interstate war
+    ("IL", "PS", 88.0, "CRITICAL", 2.9),   # Israel-Palestine: ongoing conflict, humanitarian crisis
+
+    # HIGH — Serious tensions with escalation risk
+    ("US", "CN", 74.0, "HIGH", 2.2),       # Trade war escalation, Taiwan flashpoint
+    ("KP", "KR", 63.0, "HIGH", 1.4),       # Korean Peninsula: provocations, military posturing
+    ("IN", "PK", 62.0, "HIGH", -0.8),      # Post-conflict ceasefire under strain
+    ("RU", "US", 69.0, "HIGH", 1.6),       # Proxy war, nuclear signalling, sanctions
+    ("GB", "US", 46.0, "MODERATE", 0.6),   # Trade friction, post-Brexit tensions
+
+    # MODERATE — Managed tensions
+    ("CN", "TW", 51.0, "MODERATE", 1.2),   # Cross-strait military pressure
+    ("CN", "IN", 52.0, "MODERATE", 0.9),   # Border standoffs, LAC friction
+    ("CN", "JP", 38.0, "MODERATE", 0.5),   # East China Sea, Senkaku disputes
+
+    # LOW — Stable or managed relations
+    ("KP", "US", 22.0, "LOW", 0.3),        # Diplomatic engagement continuing
+    ("RU", "GB", 14.0, "LOW", 0.4),        # Sanctions in place but stable
+    ("RU", "DE", 13.0, "LOW", 0.1),        # Energy decoupling complete, stable
+    ("RU", "FR", 12.0, "LOW", -0.1),       # European security stable
+    ("CN", "DE", 11.0, "LOW", 0.2),        # Industrial competition managed
+    ("CN", "FR", 10.0, "LOW", 0.1),        # Strategic hedging stable
+    ("CN", "GB", 10.0, "LOW", 0.2),        # Indo-Pacific friction minimal
+    ("IN", "US", 9.0, "LOW", -0.2),        # Strong strategic partnership
+    ("CA", "CN", 9.0, "LOW", 0.1),         # Diplomatic channels open
+    ("TR", "GR", 8.0, "LOW", 0.1),         # Eastern Mediterranean stable
+    ("RU", "CA", 8.0, "LOW", 0.2),         # Arctic cooperation limited but stable
+    ("IR", "GB", 8.0, "LOW", 0.1),         # Maritime tensions minimal
+    ("IR", "FR", 7.0, "LOW", 0.1),         # Nuclear diplomacy ongoing
+    ("IR", "DE", 7.0, "LOW", 0.1),         # EU sanctions stable
+    ("IL", "SA", 6.0, "LOW", -0.3),        # Quiet normalization progressing
+    ("RU", "JP", 6.0, "LOW", 0.1),         # Kuril dispute frozen but stable
 ]
 
 DEMO_MARKET = {
@@ -52,24 +77,24 @@ DEMO_MARKET = {
 }
 
 DEMO_ALERTS = [
-    ("IN", "PK", "CRITICAL", "score_jump",
-     "Risk surged +8.7 pts for IN-PK",
-     "Geopolitical risk between India and Pakistan rose sharply following cross-border incidents. Current level: CRITICAL."),
     ("IL", "IR", "CRITICAL", "critical_threshold",
-     "CRITICAL threshold reached: IL-IR at 82/100",
-     "Risk between Israel and Iran has crossed the critical threshold. Immediate monitoring recommended."),
-    ("RU", "UA", "CRITICAL", "tier_change",
-     "RU-UA escalated to CRITICAL",
-     "Risk level between Russia and Ukraine has escalated. Score: 91/100."),
-    ("CN", "US", "WARNING", "score_jump",
-     "Risk jumped +6.1 pts for CN-US",
-     "US-China tensions elevated following trade and technology disputes."),
-    ("CN", "TW", "WARNING", "score_jump",
-     "CN-TW risk elevated to HIGH",
-     "Cross-strait tensions have increased. Score: 79/100."),
-    ("IN", "CN", "WARNING", "tier_change",
-     "IN-CN escalated to HIGH",
-     "India-China border tensions contributing to elevated risk score."),
+     "CRITICAL: IL-IR near-war environment at 96/100",
+     "Israel-Iran tensions have reached maximum risk. Direct strikes exchanged; one miscalculation could trigger full regional war. Risk level: CRITICAL (96/100)."),
+    ("US", "IR", "CRITICAL", "critical_threshold",
+     "CRITICAL: US-IR nuclear brinkmanship at 96/100",
+     "United States-Iran nuclear standoff at peak intensity. Maximum pressure campaign, regional military deployments, and sanctions escalation. Risk level: CRITICAL (96/100)."),
+    ("RU", "UA", "CRITICAL", "critical_threshold",
+     "CRITICAL: RU-UA active war at 95/100",
+     "Russia-Ukraine conflict remains the most dangerous active interstate war globally. Risk level: CRITICAL (95/100)."),
+    ("IL", "PS", "CRITICAL", "score_jump",
+     "CRITICAL: IL-PS ongoing conflict at 88/100",
+     "Israeli-Palestinian conflict continues with sustained military operations. Humanitarian crisis deepening. Risk level: CRITICAL (88/100)."),
+    ("US", "CN", "HIGH", "score_jump",
+     "HIGH: US-CN trade war escalation at 74/100",
+     "US-China tensions elevated across trade, technology, and Taiwan flashpoint. Risk level: HIGH (74/100)."),
+    ("RU", "US", "HIGH", "tier_change",
+     "HIGH: RU-US proxy conflict and nuclear signalling at 69/100",
+     "Russia-US tensions driven by Ukraine proxy war, nuclear rhetoric, and sanctions. Risk level: HIGH (69/100)."),
 ]
 
 BRIEF_TEMPLATES = {
@@ -162,6 +187,8 @@ COUNTRY_NAMES = {
     "PK": "Pakistan", "UA": "Ukraine", "IL": "Israel", "IR": "Iran",
     "KP": "North Korea", "KR": "South Korea", "SA": "Saudi Arabia",
     "GB": "United Kingdom", "TW": "Taiwan", "TR": "Turkey", "GR": "Greece",
+    "JP": "Japan", "DE": "Germany", "FR": "France", "CA": "Canada",
+    "PS": "Palestine",
 }
 
 
@@ -208,17 +235,30 @@ def seed_sentiment_scores(db) -> None:
     # Keep values in a range that produces varied model outputs.
     # Scale: -1.0 = very hostile, 0.0 = neutral, +1.0 = cooperative
     base_sentiment = {
-        # Active conflict zones — moderately negative (not extreme)
-        "RU": -0.38, "UA": -0.35,
-        "IN": -0.22, "PK": -0.28,
-        "IL": -0.32, "IR": -0.36,
-        "KP": -0.40, "CN": -0.20,
-        # Elevated tension — mildly negative
-        "TW": -0.18, "KR": -0.12,
-        # Lower tension — near neutral
-        "US": -0.10, "GB": -0.08,
-        "SA": -0.06, "TR": -0.05,
-        "GR": -0.04,
+        # CRITICAL (96) — IL-IR, US-IR: near-war / nuclear brinkmanship
+        "IL": -0.52, "IR": -0.50,
+        # CRITICAL (95) — RU-UA: active war
+        "RU": -0.48, "UA": -0.46,
+        # CRITICAL (88) — IL-PS: ongoing conflict
+        "PS": -0.44,
+        # HIGH (74) — US-CN: trade war + Taiwan
+        "US": -0.38,
+        # HIGH (69) — RU-US already covered; CN also HIGH context
+        "CN": -0.34,
+        # HIGH (63) — KP-KR
+        "KP": -0.32, "KR": -0.28,
+        # HIGH (62) — IN-PK
+        "IN": -0.26, "PK": -0.24,
+        # MODERATE (51-52) — CN-TW, CN-IN
+        "TW": -0.18,
+        # MODERATE (46) — GB-US
+        "GB": -0.14,
+        # MODERATE (38) — CN-JP
+        "JP": -0.12,
+        # LOW — stable relations
+        "DE": -0.06, "FR": -0.05,
+        "SA": -0.02, "TR": -0.03,
+        "GR": -0.02, "CA": -0.02,
     }
 
     for country in countries:
@@ -247,17 +287,16 @@ def seed_sentiment_scores(db) -> None:
 
 def seed_risk_scores(db) -> None:
     """
-    Seed risk scores with realistic, varied values across all risk tiers.
+    Seed risk scores with realistic, varied values.
 
     Always seeds — regardless of MODEL_BACKEND — so the dashboard shows
     meaningful data immediately. The scheduler will overwrite these with
     real model-computed scores on its first run once live data flows in.
 
     Score distribution:
-      CRITICAL (≥80): RU-UA, IN-PK, IL-IR
-      HIGH     (≥60): CN-TW, CN-US, KP-US, IN-CN
-      MODERATE (≥30): KP-KR, RU-GB, TR-GR, IL-SA
-      LOW      (<30): IN-US
+      CRITICAL (≥80): RU-UA, IL-IR
+      HIGH     (≥60): US-IR, IL-PS
+      LOW      (<30): All others
     """
     if db.query(RiskScore).count() > 0:
         return
@@ -270,40 +309,96 @@ def seed_risk_scores(db) -> None:
         # 3 historical scores (24h, 48h, 72h ago)
         for h in [72, 48, 24]:
             hist_score = round(score - delta * (h / 24), 2)
+            
+            # Component scores based on risk level
+            if score >= 80:  # CRITICAL
+                neg_sent = round(random.uniform(0.75, 0.92), 3)
+                sent_det = round(random.uniform(0.65, 0.82), 3)
+                pol_host = round(random.uniform(0.70, 0.88), 3)
+                gdelt_int = round(random.uniform(0.72, 0.90), 3)
+            elif score >= 60:  # HIGH
+                neg_sent = round(random.uniform(0.55, 0.72), 3)
+                sent_det = round(random.uniform(0.45, 0.62), 3)
+                pol_host = round(random.uniform(0.50, 0.68), 3)
+                gdelt_int = round(random.uniform(0.52, 0.70), 3)
+            elif score >= 35:  # MODERATE
+                neg_sent = round(random.uniform(0.30, 0.48), 3)
+                sent_det = round(random.uniform(0.22, 0.38), 3)
+                pol_host = round(random.uniform(0.28, 0.44), 3)
+                gdelt_int = round(random.uniform(0.28, 0.44), 3)
+            else:  # LOW
+                neg_sent = round(random.uniform(0.10, 0.25), 3)
+                sent_det = round(random.uniform(0.05, 0.15), 3)
+                pol_host = round(random.uniform(0.08, 0.20), 3)
+                gdelt_int = round(random.uniform(0.10, 0.25), 3)
+            
             db.add(RiskScore(
                 country_a=a, country_b=b, pair_key=pair_key,
                 score=hist_score,
                 classification=RiskScore.classify(hist_score),
-                negative_sentiment_score=round(random.uniform(0.3, 0.7), 3),
-                sentiment_deterioration_rate=round(random.uniform(0.1, 0.5), 3),
-                politician_hostility_score=round(random.uniform(0.2, 0.6), 3),
-                gdelt_conflict_intensity=round(random.uniform(0.2, 0.7), 3),
-                vix_spike_score=round(random.uniform(0.1, 0.4), 3),
-                market_stress_score=round(random.uniform(0.2, 0.5), 3),
-                post_count_a=random.randint(20, 150),
-                post_count_b=random.randint(20, 150),
-                gdelt_event_count=random.randint(2, 18),
+                negative_sentiment_score=neg_sent,
+                sentiment_deterioration_rate=sent_det,
+                politician_hostility_score=pol_host,
+                gdelt_conflict_intensity=gdelt_int,
+                vix_spike_score=round(random.uniform(0.1, 0.3), 3),
+                market_stress_score=round(random.uniform(0.2, 0.4), 3),
+                post_count_a=random.randint(20, 100),
+                post_count_b=random.randint(20, 100),
+                gdelt_event_count=random.randint(2, 12),
                 contributing_factors=[],
                 prev_score=None,
                 score_change=0.0,
                 computed_at=now - timedelta(hours=h),
             ))
 
-        # Current score
+        # Current score with proper component scores
+        if score >= 80:  # CRITICAL
+            neg_sent = round(random.uniform(0.78, 0.94), 3)
+            sent_det = round(random.uniform(0.68, 0.85), 3)
+            pol_host = round(random.uniform(0.72, 0.90), 3)
+            gdelt_int = round(random.uniform(0.75, 0.92), 3)
+            post_a = random.randint(150, 400)
+            post_b = random.randint(150, 400)
+            events = random.randint(20, 40)
+        elif score >= 60:  # HIGH
+            neg_sent = round(random.uniform(0.58, 0.75), 3)
+            sent_det = round(random.uniform(0.48, 0.65), 3)
+            pol_host = round(random.uniform(0.52, 0.70), 3)
+            gdelt_int = round(random.uniform(0.55, 0.72), 3)
+            post_a = random.randint(80, 220)
+            post_b = random.randint(80, 220)
+            events = random.randint(10, 22)
+        elif score >= 35:  # MODERATE
+            neg_sent = round(random.uniform(0.32, 0.50), 3)
+            sent_det = round(random.uniform(0.24, 0.40), 3)
+            pol_host = round(random.uniform(0.30, 0.46), 3)
+            gdelt_int = round(random.uniform(0.30, 0.46), 3)
+            post_a = random.randint(40, 120)
+            post_b = random.randint(40, 120)
+            events = random.randint(4, 12)
+        else:  # LOW
+            neg_sent = round(random.uniform(0.12, 0.28), 3)
+            sent_det = round(random.uniform(0.08, 0.18), 3)
+            pol_host = round(random.uniform(0.10, 0.25), 3)
+            gdelt_int = round(random.uniform(0.12, 0.28), 3)
+            post_a = random.randint(30, 80)
+            post_b = random.randint(30, 80)
+            events = random.randint(3, 8)
+        
         factors = _build_factors(a, b, score, classification)
         db.add(RiskScore(
             country_a=a, country_b=b, pair_key=pair_key,
             score=score,
             classification=classification,
-            negative_sentiment_score=round(random.uniform(0.4, 0.8), 3),
-            sentiment_deterioration_rate=round(random.uniform(0.2, 0.6), 3),
-            politician_hostility_score=round(random.uniform(0.3, 0.7), 3),
-            gdelt_conflict_intensity=round(random.uniform(0.3, 0.8), 3),
-            vix_spike_score=round(random.uniform(0.2, 0.5), 3),
-            market_stress_score=round(random.uniform(0.3, 0.6), 3),
-            post_count_a=random.randint(50, 300),
-            post_count_b=random.randint(50, 300),
-            gdelt_event_count=random.randint(5, 25),
+            negative_sentiment_score=neg_sent,
+            sentiment_deterioration_rate=sent_det,
+            politician_hostility_score=pol_host,
+            gdelt_conflict_intensity=gdelt_int,
+            vix_spike_score=round(random.uniform(0.2, 0.4), 3),
+            market_stress_score=round(random.uniform(0.3, 0.5), 3),
+            post_count_a=post_a,
+            post_count_b=post_b,
+            gdelt_event_count=events,
             contributing_factors=factors,
             prev_score=prev_score,
             score_change=delta,
@@ -314,25 +409,61 @@ def seed_risk_scores(db) -> None:
 
 def _build_factors(a: str, b: str, score: float, level: str):
     factors = []
-    if score > 60:
+    if score >= 80:  # CRITICAL
         factors.append({
-            "factor": f"High negative sentiment in {a}-{b} discourse",
-            "impact": 0.22, "category": "sentiment",
+            "factor": f"Extreme hostile sentiment in {a}-{b} discourse — near-war indicators",
+            "impact": 0.28, "category": "sentiment",
         })
-    if score > 70:
         factors.append({
-            "factor": "Rapidly deteriorating rhetoric in last 72 hours",
-            "impact": 0.18, "category": "trend",
+            "factor": "Rapidly deteriorating rhetoric and military posturing in last 72 hours",
+            "impact": 0.24, "category": "trend",
         })
-    if score > 75:
         factors.append({
-            "factor": "Hostile language from tracked political leaders",
-            "impact": 0.15, "category": "political",
+            "factor": "Hostile language and threats from senior political and military leaders",
+            "impact": 0.20, "category": "political",
         })
-    if score > 65:
         factors.append({
-            "factor": f"GDELT detected multiple conflict events in 72h window",
-            "impact": 0.14, "category": "events",
+            "factor": "GDELT detected multiple high-severity conflict events in 72h window",
+            "impact": 0.18, "category": "events",
+        })
+    elif score >= 60:  # HIGH
+        factors.append({
+            "factor": f"Elevated negative sentiment in {a}-{b} discourse with escalation signals",
+            "impact": 0.20, "category": "sentiment",
+        })
+        factors.append({
+            "factor": "Deteriorating bilateral rhetoric and diplomatic friction",
+            "impact": 0.16, "category": "trend",
+        })
+        factors.append({
+            "factor": "Hostile statements from political figures on both sides",
+            "impact": 0.13, "category": "political",
+        })
+        factors.append({
+            "factor": "GDELT conflict events above baseline in monitoring window",
+            "impact": 0.11, "category": "events",
+        })
+    elif score >= 35:  # MODERATE
+        factors.append({
+            "factor": f"Moderate negative sentiment in {a}-{b} bilateral discourse",
+            "impact": 0.14, "category": "sentiment",
+        })
+        factors.append({
+            "factor": "Periodic friction in bilateral dialogue and negotiations",
+            "impact": 0.10, "category": "trend",
+        })
+        factors.append({
+            "factor": "Isolated conflict events without sustained escalation pattern",
+            "impact": 0.08, "category": "events",
+        })
+    else:  # LOW
+        factors.append({
+            "factor": f"Stable bilateral relations between {a} and {b}",
+            "impact": 0.08, "category": "sentiment",
+        })
+        factors.append({
+            "factor": "Minimal conflict events in monitoring period",
+            "impact": 0.06, "category": "events",
         })
     return sorted(factors, key=lambda x: x["impact"], reverse=True)
 
@@ -386,19 +517,35 @@ def seed_briefs(db) -> None:
 
 
 def seed_gdelt_events(db) -> None:
-    """Seed sample GDELT conflict events."""
+    """Seed sample GDELT conflict events based on current geopolitical landscape."""
     if db.query(GdeltEvent).count() > 0:
         return
     now = datetime.utcnow()
     events = [
-        ("IN", "PK", "190", -8.5, 42, "Lahore, Pakistan"),
-        ("RU", "UA", "195", -9.0, 87, "Kyiv, Ukraine"),
-        ("IL", "IR", "190", -8.0, 63, "Tehran, Iran"),
-        ("CN", "US", "172", -6.5, 55, "South China Sea"),
-        ("CN", "TW", "195", -8.8, 71, "Taiwan Strait"),
-        ("KP", "US", "172", -7.2, 38, "Korean Peninsula"),
-        ("IN", "CN", "172", -6.0, 29, "Line of Actual Control"),
-        ("RU", "GB", "172", -5.5, 22, "Eastern Europe"),
+        # CRITICAL (96) — IL-IR, US-IR: near-war / nuclear brinkmanship
+        ("IL", "IR", "195", -9.8, 112, "Tehran / Tel Aviv"),
+        ("US", "IR", "195", -9.6, 98, "Persian Gulf / Strait of Hormuz"),
+        # CRITICAL (95) — RU-UA: active war
+        ("RU", "UA", "195", -9.2, 95, "Kyiv, Ukraine"),
+        # CRITICAL (88) — IL-PS: ongoing conflict
+        ("IL", "PS", "190", -8.8, 82, "Gaza Strip"),
+
+        # HIGH (74) — US-CN
+        ("US", "CN", "172", -6.8, 58, "South China Sea / Taiwan Strait"),
+        # HIGH (69) — RU-US
+        ("RU", "US", "172", -6.2, 48, "Eastern Europe / NATO Flank"),
+        # HIGH (63) — KP-KR
+        ("KP", "KR", "172", -5.8, 42, "Korean DMZ"),
+        # HIGH (62) — IN-PK
+        ("IN", "PK", "172", -5.5, 38, "Line of Control, Kashmir"),
+        # MODERATE (52) — CN-IN
+        ("CN", "IN", "042", -3.8, 22, "Himalayan Border / LAC"),
+        # MODERATE (51) — CN-TW
+        ("CN", "TW", "042", -3.5, 20, "Taiwan Strait"),
+        # MODERATE (46) — GB-US
+        ("GB", "US", "042", -2.8, 14, "London / Washington"),
+        # MODERATE (38) — CN-JP
+        ("CN", "JP", "042", -2.4, 12, "East China Sea / Senkaku Islands"),
     ]
     for i, (a, b, code, gs, articles, geo) in enumerate(events):
         db.add(GdeltEvent(

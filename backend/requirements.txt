@@ -11,6 +11,7 @@ praw==7.7.1
 ntscraper==0.3.8
 yfinance==0.2.40
 requests==2.32.2
+apify-client==1.8.1
 transformers==4.41.2
 torch
 huggingface-hub==0.23.2
@@ -24,3 +25,7 @@ anthropic==0.28.0
 pydantic==2.7.1
 pydantic-settings==2.3.0
 httpx==0.27.0
+
+# [dev]
+pytest>=7.0
+hypothesis>=6.0

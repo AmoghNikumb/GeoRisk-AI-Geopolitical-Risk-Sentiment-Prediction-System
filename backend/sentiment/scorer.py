@@ -1,6 +1,7 @@
 """
 sentiment/scorer.py
-Batch-scores processed posts using HuggingFace Inference API.
+Batch-scores processed posts using the local RoBERTa pipeline (primary)
+or HuggingFace Inference API (fallback when HUGGINGFACE_API_KEY is set).
 Handles both English (RoBERTa) and multilingual (XLM-RoBERTa) texts.
 Runs every hour via APScheduler (after preprocessing).
 """
@@ -47,6 +48,30 @@ def _get_multilingual_client() -> HuggingFaceClient:
             settings.multilingual_model, label_map=ROBERTA_LABEL_MAP
         )
     return _multilingual_client
+
+
+def _score_texts_local(texts: List[str]) -> List[dict]:
+    """Score texts using the local RoBERTa pipeline (no API key needed)."""
+    from services.nlp_inference import get_nlp_service
+    svc = get_nlp_service()
+    if not svc.is_ready():
+        logger.warning("Local RoBERTa not ready — returning neutral defaults")
+        return [{"label": "NEUTRAL", "score": 0.5}] * len(texts)
+
+    results = svc.score_texts(texts)
+    # Convert NLPInferenceService format → HuggingFaceClient format
+    mapped = []
+    for r in results:
+        label = r.get("label_name", "NEUTRAL")
+        # Use the winning probability as confidence
+        if label == "NEGATIVE":
+            conf = r.get("p_negative", 0.5)
+        elif label == "POSITIVE":
+            conf = r.get("p_positive", 0.5)
+        else:
+            conf = r.get("p_neutral", 0.5)
+        mapped.append({"label": label, "score": conf})
+    return mapped
 
 
 def _compute_engagement_score(upvotes: int, retweets: int) -> float:
@@ -133,6 +158,40 @@ class SentimentScorer:
         if not posts:
             return 0
 
+        use_local = not settings.huggingface_api_key
+
+        if use_local:
+            # ── Local RoBERTa pipeline (no API key needed) ────────────────
+            texts = [p.clean_text[:MAX_TEXT_LENGTH] for p in posts]
+            results = _score_texts_local(texts)
+
+            scored = 0
+            with get_db_session() as db:
+                for post, result in zip(posts, results):
+                    if result is None:
+                        continue
+                    try:
+                        pp = db.query(ProcessedPost).filter_by(id=post.id).first()
+                        if not pp:
+                            continue
+                        pp.sentiment_label      = result["label"]
+                        pp.sentiment_confidence = round(result["score"], 4)
+                        pp.sentiment_score      = normalize_to_float(
+                            result["label"], result["score"]
+                        )
+                        pp.sentiment_model      = settings.nlp_roberta_model
+                        pp.sentiment_scored     = True
+
+                        raw = db.query(RawPost).filter_by(id=pp.raw_post_id).first()
+                        if raw:
+                            raw.sentiment_scored = True
+
+                        scored += 1
+                    except Exception as e:
+                        logger.error(f"Error saving score for post {post.id}: {e}")
+            return scored
+
+        # ── HuggingFace API path (when key is set) ────────────────────────
         # Split by language
         english = [(i, p) for i, p in enumerate(posts) if p.is_english]
         multilingual = [(i, p) for i, p in enumerate(posts) if not p.is_english]

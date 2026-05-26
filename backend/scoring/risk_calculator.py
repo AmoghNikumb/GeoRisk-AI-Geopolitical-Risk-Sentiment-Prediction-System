@@ -21,19 +21,45 @@ logger = logging.getLogger(__name__)
 
 # ── Country pairs to monitor (alphabetical order) ────────────────────────────
 TRACKED_PAIRS: List[Tuple[str, str]] = [
-    ("CN", "US"),
-    ("IN", "PK"),
-    ("RU", "UA"),
+    # CRITICAL
     ("IL", "IR"),
-    ("IN", "CN"),
-    ("KP", "US"),
+    ("US", "IR"),
+    ("RU", "UA"),
+    ("IL", "PS"),
+    # HIGH
+    ("US", "CN"),
+    ("RU", "US"),
     ("KP", "KR"),
-    ("IL", "SA"),
-    ("RU", "GB"),
+    ("IN", "PK"),
+    # MODERATE
+    ("GB", "US"),
     ("CN", "TW"),
+    ("CN", "IN"),
+    ("CN", "JP"),
+    # LOW (kept for live scoring coverage)
+    ("KP", "US"),
+    ("IL", "SA"),
     ("TR", "GR"),
-    ("IN", "US"),
 ]
+
+# ── Pinned scores — these override any ML model output ───────────────────────
+# These are the authoritative geopolitical risk scores as of May 22, 2026.
+# The ML model runs for component scores / contributing factors only.
+# To change a score, update this dict and run update_risk_scores.py.
+PINNED_SCORES: Dict[str, float] = {
+    "IL-IR":  96.0,   # Israel-Iran: near-war, direct strikes exchanged
+    "IR-US":  96.0,   # US-Iran: nuclear brinkmanship, maximum pressure
+    "RU-UA":  95.0,   # Russia-Ukraine: active war
+    "IL-PS":  88.0,   # Israel-Palestine: ongoing conflict, humanitarian crisis
+    "CN-US":  74.0,   # US-China: trade war escalation, Taiwan flashpoint
+    "RU-US":  69.0,   # Russia-US: proxy war, nuclear signalling, sanctions
+    "KP-KR":  63.0,   # North Korea-South Korea: provocations, military posturing
+    "IN-PK":  62.0,   # India-Pakistan: post-conflict ceasefire under strain
+    "GB-US":  46.0,   # UK-US: trade friction, post-Brexit tensions
+    "CN-TW":  51.0,   # China-Taiwan: cross-strait military pressure
+    "CN-IN":  52.0,   # China-India: border standoffs, LAC friction
+    "CN-JP":  38.0,   # China-Japan: East China Sea, Senkaku disputes
+}
 
 
 # ── Rule-based normalisers (used by dummy backend + contributing factors) ─────
@@ -191,6 +217,20 @@ def compute_risk_score(country_a: str, country_b: str) -> RiskScore:
             model_used  = "dummy"
 
         classification = RiskScore.classify(final_score)
+
+        # ── Pinned score override ─────────────────────────────────────────────
+        # If this pair has a pinned score, use it regardless of model output.
+        # Component scores and contributing factors are still computed from
+        # real data for the breakdown panel — only the headline score is pinned.
+        if pair_key in PINNED_SCORES:
+            pinned = PINNED_SCORES[pair_key]
+            if abs(final_score - pinned) > 0.5:
+                logger.info(
+                    f"{pair_key}: model score {final_score:.1f} overridden by "
+                    f"pinned score {pinned:.1f}"
+                )
+            final_score = pinned
+            classification = RiskScore.classify(final_score)
 
         # Previous score for trend delta
         prev = db.query(RiskScore).filter_by(pair_key=pair_key).order_by(

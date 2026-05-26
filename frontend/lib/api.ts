@@ -42,5 +42,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texts, country: country ?? 'GLOBAL' }),
     }).then(r => r.json()),
+  politicalStatements: (limit = 20, forceReload = false) =>
+    fetchAPI<any>(`/api/model/political-statements?limit=${limit}&force_reload=${forceReload}`),
 }
 

@@ -3,6 +3,8 @@ scheduler.py — APScheduler wiring all background jobs.
 Jobs run in-process (no separate worker needed).
 """
 import logging
+from pathlib import Path
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -64,6 +66,19 @@ def job_aggregate():
         logger.error(f"Aggregator job failed: {e}")
 
 
+def job_groq_risk_scores():
+    """Score all tracked country pairs using Groq LLM."""
+    try:
+        from config import settings as _settings
+        if not _settings.GROQ_API_KEY:
+            logger.debug("Groq risk scoring skipped — GROQ_API_KEY not set")
+            return
+        from services.groq_risk_scorer import GroqRiskScoreEngine
+        GroqRiskScoreEngine(_settings.GROQ_API_KEY).run()
+    except Exception as e:
+        logger.error(f"Groq risk score job failed: {e}")
+
+
 def job_risk_scores():
     try:
         from scoring.risk_calculator import RiskScoreEngine
@@ -88,6 +103,54 @@ def job_news():
         logger.info(f"News cache refreshed: {result['total']} items")
     except Exception as e:
         logger.error(f"News aggregator job failed: {e}")
+
+
+def job_apify_watcher():
+    """Watch the project-root datasets/ directory and ingest any .txt or .json files found.
+    
+    After successful ingestion, files are moved to datasets/processed/ so they
+    are not re-ingested on the next scheduler tick.
+    """
+    try:
+        from collectors.apify_ingester import ApifyIngester
+        import shutil
+
+        # datasets/ lives one level above backend/ (project root)
+        datasets_dir = Path(__file__).parent.parent / "datasets"
+        processed_dir = datasets_dir / "processed"
+        processed_dir.mkdir(parents=True, exist_ok=True)
+
+        files = list(datasets_dir.glob("*.txt")) + list(datasets_dir.glob("*.json"))
+        if not files:
+            logger.debug("Apify watcher: no dataset files found in %s", datasets_dir)
+            return
+
+        logger.info("Apify watcher: found %d file(s) to ingest in %s", len(files), datasets_dir)
+        ingester = ApifyIngester()
+        for f in files:
+            try:
+                summary = ingester.ingest(f)
+                logger.info(
+                    "Apify watcher ingested %s — inserted=%d, duplicates=%d, skipped=%d",
+                    f.name, summary.inserted, summary.duplicates, summary.skipped,
+                )
+                # Archive the file so it isn't re-ingested next run
+                dest = processed_dir / f.name
+                shutil.move(str(f), str(dest))
+                logger.info("Apify watcher: archived %s → processed/%s", f.name, f.name)
+            except Exception as e:
+                logger.error("Apify watcher: failed to ingest %s: %s", f.name, e)
+    except Exception as e:
+        logger.error(f"Apify watcher job failed: {e}")
+
+
+def job_apify_live():
+    """Fetch live tweets from Apify API and ingest them."""
+    try:
+        from collectors.apify_collector import ApifyCollector
+        ApifyCollector().run()
+    except Exception as e:
+        logger.error(f"Apify live collector job failed: {e}")
 
 
 def job_briefs():
@@ -125,6 +188,20 @@ def start_scheduler():
         _scheduler.add_job(job_reddit, IntervalTrigger(seconds=settings.reddit_interval), id="reddit", replace_existing=True)
     if settings.enable_twitter:
         _scheduler.add_job(job_twitter, IntervalTrigger(seconds=settings.twitter_interval), id="twitter", replace_existing=True)
+        _scheduler.add_job(
+            job_apify_watcher,
+            IntervalTrigger(seconds=settings.twitter_interval),
+            id="apify_watcher",
+            replace_existing=True,
+        )
+        # Live Apify API collector — only runs if an API key is configured
+        if settings.apify_api_key:
+            _scheduler.add_job(
+                job_apify_live,
+                IntervalTrigger(seconds=settings.twitter_interval),
+                id="apify_live",
+                replace_existing=True,
+            )
     if settings.enable_markets:
         _scheduler.add_job(job_market, IntervalTrigger(seconds=settings.market_interval), id="market", replace_existing=True)
     if settings.enable_gdelt:
@@ -134,6 +211,10 @@ def start_scheduler():
     _scheduler.add_job(job_process_and_score, IntervalTrigger(seconds=settings.process_interval), id="scoring",   replace_existing=True)
     _scheduler.add_job(job_aggregate,          IntervalTrigger(seconds=settings.process_interval), id="aggregate", replace_existing=True)
     _scheduler.add_job(job_risk_scores,        IntervalTrigger(seconds=settings.process_interval), id="risk",      replace_existing=True)
+
+    # Groq LLM risk scoring — every 30 minutes (if API key set)
+    if settings.GROQ_API_KEY:
+        _scheduler.add_job(job_groq_risk_scores, IntervalTrigger(seconds=1800), id="groq_risk", replace_existing=True)
 
     # Alerts — every 15 mins
     _scheduler.add_job(job_alerts, IntervalTrigger(seconds=settings.alert_interval), id="alerts", replace_existing=True)
